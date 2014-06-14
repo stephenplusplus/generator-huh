@@ -1,0 +1,39 @@
+{
+  "name": "generator-huh",
+  "version": "0.0.0",
+  "description": "Yeoman generator",
+  "license": "MIT",
+  "main": "app/index.js",
+  "repository": "stephenplusplus/generator-huh",
+  "author": {
+    "name": "Stephen Sawchuk",
+    "email": "sawchuk@gmail.com",
+    "url": "https://github.com/stephenplusplus"
+  },
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "files": [
+    "app"
+  ],
+  "keywords": [
+    "yeoman-generator"
+  ],
+  "dependencies": {
+    "chalk": "~0.4.0",
+    "modmod": "^0.1.2",
+    "opn": "^0.1.2",
+    "propprop": "^0.3.0",
+    "yeoman-generator": "~0.16.0",
+    "yosay": "^0.1.0"
+  },
+  "devDependencies": {
+    "mocha": "*"
+  },
+  "peerDependencies": {
+    "yo": ">=1.0.0"
+  }
+}

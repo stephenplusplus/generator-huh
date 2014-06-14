@@ -1,0 +1,65 @@
+[
+  {
+    "name": "AngularJS",
+    "yeomanGenerator": "generator-angular",
+    "description": "Angular is a framework from Google that helps you build websites. In Google's own words: \"It's what HTML would have been, had it been designed for building web-apps.\"",
+    "links": [
+      {
+        "name": "Homepage",
+        "href": "https://angularjs.org"
+      },
+      {
+        "name": "GitHub",
+        "href": "https://github.com/angular/angular.js"
+      },
+      {
+        "name": "TodoMVC Example",
+        "href": "http://todomvc.com/architecture-examples/angularjs"
+      }
+    ],
+    "chapters": [
+      {
+        "name": "Who is using Angular?",
+        "content": "Lots of people."
+      },
+      {
+        "name": "Why are they using it?",
+        "content": "Well, it's quite nice."
+      }
+    ],
+    "actions": [ "yeomanGenerator" ]
+  },
+  {
+    "name": "Ember.js",
+    "description": "Ember is...",
+    "links": [
+      {
+        "name": "Homepage",
+        "href": "http://emberjs.com"
+      }
+    ],
+    "chapters": []
+  },
+  {
+    "name": "React",
+    "description": "React is...",
+    "links": [
+      {
+        "name": "Homepage",
+        "href": "http://facebook.github.io/react"
+      }
+    ],
+    "chapters": []
+  },
+  {
+    "name": "Polymer",
+    "description": "Polymer is...",
+    "links": [
+      {
+        "name": "Homepage",
+        "href": "http://www.polymer-project.org"
+      }
+    ],
+    "chapters": []
+  }
+]
