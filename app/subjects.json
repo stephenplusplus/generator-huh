@@ -27,10 +27,11 @@
         "content": "Well, it's quite nice."
       }
     ],
-    "actions": [ "yeomanGenerator" ]
+    "actions": ["yeomanGenerator"]
   },
   {
     "name": "Ember.js",
+    "yeomanGenerator": "generator-ember",
     "description": "Ember is...",
     "links": [
       {
@@ -38,10 +39,12 @@
         "href": "http://emberjs.com"
       }
     ],
-    "chapters": []
+    "chapters": [],
+    "actions": ["yeomanGenerator"]
   },
   {
     "name": "React",
+    "yeomanGenerator": "generator-react",
     "description": "React is...",
     "links": [
       {
@@ -49,10 +52,17 @@
         "href": "http://facebook.github.io/react"
       }
     ],
-    "chapters": []
+    "chapters": [
+      {
+        "name": "Who is using React?",
+        "content": "Passy."
+      }
+    ],
+    "actions": ["yeomanGenerator"]
   },
   {
     "name": "Polymer",
+    "yeomanGenerator": "generator-polymer",
     "description": "Polymer is...",
     "links": [
       {
@@ -60,6 +70,12 @@
         "href": "http://www.polymer-project.org"
       }
     ],
-    "chapters": []
+    "chapters": [
+      {
+        "name": "Who is using Polymer?",
+        "content": "Addy."
+      }
+    ],
+    "actions": ["yeomanGenerator"]
   }
 ]

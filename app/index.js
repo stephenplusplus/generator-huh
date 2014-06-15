@@ -4,6 +4,9 @@ var $ = require('modmod')('chalk', 'opn', 'propprop', 'yeoman-generator', 'yosay
 var getBack = function () {};
 var goBack = function () {};
 var separator = { name: new $['yeoman-generator'].inquirer.Separator() };
+var installedGenerators;
+var refreshGenerators;
+var spawnCommand;
 
 var actions = {
   yeomanGenerator: {
@@ -13,7 +16,7 @@ var actions = {
 
 var subjects = require('./subjects.json').map(function (subject) {
   subject.chapters = subject.chapters.map(function (chapter) {
-    chapter.action = getAction(chapter);
+    chapter.action = getAction('content', chapter);
     return chapter;
   });
 
@@ -21,8 +24,8 @@ var subjects = require('./subjects.json').map(function (subject) {
   if (subject.actions) {
     subject.chapters.push(separator);
     subject.actions.forEach(function (action) {
-      var chapter =  actions[action];
-      chapter.action = getAction({
+      var chapter = actions[action];
+      chapter.action = getAction('action', {
         action: action,
         subject: subject
       });
@@ -34,7 +37,7 @@ var subjects = require('./subjects.json').map(function (subject) {
   subject.chapters.push(separator);
   subject.links.forEach(function (link) {
     var chapter = link;
-    chapter.action = getAction(chapter);
+    chapter.action = getAction('link', chapter);
     subject.chapters.push(chapter);
   });
 
@@ -60,63 +63,95 @@ function pick(array, prop, value) {
   })[0];
 }
 
-function getAction(where) {
+function getAction(type, obj) {
   return function (done) {
-    if (where === 'exit') {
-      return done();
-    }
+    if (type === 'exit') return done();
+    if (type === 'getBack') return getBack() && done();
+    if (type === 'goBack')  return goBack() && done();
 
-    if (where === 'getBack') {
-      getBack();
-      return done();
-    }
-
-    if (where === 'goBack') {
-      goBack();
-      return done();
-    }
-
-    if (where.content) {
+    if (type === 'content') {
       console.log();
-      console.log($.chalk.bgCyan.bold.white('', where.name, ''));
-      console.log(where.content);
+      console.log($.chalk.bgCyan.bold.white('', obj.name, ''));
+      console.log(obj.content);
       console.log();
       getBack();
       return done();
     }
 
-    if (where.action) {
-      if (where.action === 'yeomanGenerator') {
-        runGenerator(where.subject.yeomanGenerator, done);
+    if (type === 'action') {
+      if (obj.action === 'yeomanGenerator') {
+        runGenerator(obj.subject.yeomanGenerator, done);
       }
       return;
     }
 
-    if (where.href) {
-      $.opn(where.href);
+    if (type === 'link') {
+      $.opn(obj.href);
       return done();
     }
   };
 }
 
 function runGenerator(generatorName, done) {
-  // Check if the generator is installed.
-  // Install it if not.
-  // Run the generator.
-  console.log(generatorName);
-  done();
+  var generator = installedGenerators[generatorName];
+
+  if (!generator) {
+    generator = Object.keys(installedGenerators).filter(function (generator) {
+      return generator === generatorName.replace('generator-', '') + ':app';
+    })[0];
+  }
+
+  if (generator) {
+    spawnCommand('yo', [generator])
+      .on('error', function () {
+        goBack();
+        done();
+      });
+  } else {
+    // Install the generator.
+    spawnCommand('npm', ['install', '-g', generatorName])
+      .on('exit', function (err) {
+        if (err) {
+          goBack();
+          done();
+          return;
+        }
+
+        generatorName = generatorName.replace('generator-', '') + ':app';
+        installedGenerators[generatorName] = generatorName;
+        runGenerator(generatorName, done);
+      })
+      .on('error', function () {
+        goBack();
+        done();
+      });
+  }
+}
+
+var steps = ['_askSubject', '_askChapter'];
+function setNavigationSteps(activeStep, done) {
+  getBack = function () {
+    this[activeStep](done);
+  }.bind(this);
+
+  goBack = function () {
+    this[steps[steps.indexOf(activeStep) - 1]](done);
+  }.bind(this);
 }
 
 module.exports = $['yeoman-generator'].generators.Base.extend({
   init: function () {
+    refreshGenerators = function () {
+      installedGenerators = this.env.getGeneratorsMeta();
+    }.bind(this);
+    spawnCommand = this.spawnCommand;
+
+    refreshGenerators();
     this._askSubject(this.async());
   },
 
   _askSubject: function (done) {
-    goBack = getBack;
-    getBack = function () {
-      this._askSubject(done);
-    }.bind(this);
+    setNavigationSteps.call(this, '_askSubject', done);
 
     this.prompt([
       {
@@ -133,10 +168,7 @@ module.exports = $['yeoman-generator'].generators.Base.extend({
   },
 
   _askChapter: function (done) {
-    goBack = getBack;
-    getBack = function () {
-      this._askChapter(done);
-    }.bind(this);
+    setNavigationSteps.call(this, '_askChapter', done);
 
     this.log($.yosay('Ah yes, ' + this.subject.name + '. You know, ' + this.subject.description, { maxLength: 60 }));
 
