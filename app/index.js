@@ -1,14 +1,14 @@
 'use strict';
-var $ = require('modmod')('chalk', 'opn', 'propprop', 'yeoman-generator', 'yosay');
+var $ = require('modmod')('chalk', 'fs', 'opn', 'propprop', 'sillystring', 'yeoman-generator', 'yosay');
 
 var getBack = function () {};
 var goBack = function () {};
 var separator = { name: new $['yeoman-generator'].inquirer.Separator() };
 var installedGenerators;
-var refreshGenerators;
 var spawnCommand;
+var log;
 
-var actions = {
+var hooks = {
   yeomanGenerator: {
     name: 'Run the Yeoman generator'
   }
@@ -20,48 +20,37 @@ var subjects = require('./subjects.json').map(function (subject) {
     return chapter;
   });
 
-  // Add actions.
-  if (subject.actions) {
+  // Add hooks.
+  if (subject.hooks) {
     subject.chapters.push(separator);
-    subject.actions.forEach(function (action) {
-      var chapter = actions[action];
-      chapter.action = getAction('action', {
-        action: action,
-        subject: subject
-      });
-      subject.chapters.push(chapter);
+    subject.hooks.forEach(function (hook) {
+      subject.chapters.push(extend(
+        hooks[hook],
+        {
+          action: getAction('hook', {
+            hook: hook,
+            subject: subject
+          })
+        }
+      ));
     });
   }
 
   // Add links.
   subject.chapters.push(separator);
   subject.links.forEach(function (link) {
-    var chapter = link;
-    chapter.action = getAction('link', chapter);
-    subject.chapters.push(chapter);
+    subject.chapters.push(extend(link, { action: getAction('link', link) }));
   });
 
   // Add navigation actions.
   subject.chapters = subject.chapters.concat([
     separator,
-    {
-      name: 'Go back',
-      action: getAction('goBack')
-    },
-    {
-      name: 'Exit',
-      action: getAction('exit')
-    }
+    { name: 'Go back', action: getAction('goBack') },
+    { name: 'Exit', action: getAction('exit') }
   ]);
 
   return subject;
 });
-
-function pick(array, prop, value) {
-  return array.filter(function (item) {
-    return item[prop] === value;
-  })[0];
-}
 
 function getAction(type, obj) {
   return function (done) {
@@ -70,16 +59,16 @@ function getAction(type, obj) {
     if (type === 'goBack')  return goBack() && done();
 
     if (type === 'content') {
-      console.log();
-      console.log($.chalk.bgCyan.bold.white('', obj.name, ''));
-      console.log(obj.content);
-      console.log();
+      log();
+      log(heading(obj.name));
+      log(obj.content);
+      log();
       getBack();
       return done();
     }
 
-    if (type === 'action') {
-      if (obj.action === 'yeomanGenerator') {
+    if (type === 'hook') {
+      if (obj.hook === 'yeomanGenerator') {
         runGenerator(obj.subject.yeomanGenerator, done);
       }
       return;
@@ -92,6 +81,17 @@ function getAction(type, obj) {
   };
 }
 
+function mkdir(dirName, callback) {
+  if ($.fs.existsSync(dirName)) {
+    return mkdir(dirName + '-' + $.sillystring().replace(/[\W]+/g, '-'), callback);
+  } else {
+    return $.fs.mkdir(dirName, function (err) {
+      process.chdir(dirName);
+      callback(err, dirName);
+    });
+  }
+}
+
 function runGenerator(generatorName, done) {
   var generator = installedGenerators[generatorName];
 
@@ -102,19 +102,35 @@ function runGenerator(generatorName, done) {
   }
 
   if (generator) {
-    spawnCommand('yo', [generator])
-      .on('error', function () {
+    mkdir(generator.split(':')[0] + '-app', function (err, createdDirectory) {
+      if (err) {
         goBack();
-        done();
+        return done();
+      }
+
+      spawnCommand('yo', [generator])
+        .on('exit', function (err) {
+          if (err) {
+            goBack();
+            return done();
+          }
+
+          log();
+          log(heading('App created!'));
+          log('A new app has been scaffolded for you in ./' + createdDirectory + '.');
+          done();
+        })
+        .on('error', function () {
+          goBack();
+          done();
+        });
       });
   } else {
-    // Install the generator.
     spawnCommand('npm', ['install', '-g', generatorName])
       .on('exit', function (err) {
         if (err) {
           goBack();
-          done();
-          return;
+          return done();
         }
 
         generatorName = generatorName.replace('generator-', '') + ':app';
@@ -128,30 +144,31 @@ function runGenerator(generatorName, done) {
   }
 }
 
-var steps = ['_askSubject', '_askChapter'];
-function setNavigationSteps(activeStep, done) {
-  getBack = function () {
-    this[activeStep](done);
-  }.bind(this);
+function heading(text) {
+  return $.chalk.bgCyan.bold.white('', text, '');
+}
 
-  goBack = function () {
-    this[steps[steps.indexOf(activeStep) - 1]](done);
-  }.bind(this);
+function pick(array, prop, value) {
+  return array.filter(function (item) {
+    return item[prop] === value;
+  })[0];
+}
+
+function extend(obj1, obj2) {
+  for (var prop in obj1) obj2[prop] = obj1[prop];
+  return obj2;
 }
 
 module.exports = $['yeoman-generator'].generators.Base.extend({
   init: function () {
-    refreshGenerators = function () {
-      installedGenerators = this.env.getGeneratorsMeta();
-    }.bind(this);
+    installedGenerators = this.env.getGeneratorsMeta();
     spawnCommand = this.spawnCommand;
-
-    refreshGenerators();
+    log = this.log.bind(this);
     this._askSubject(this.async());
   },
 
   _askSubject: function (done) {
-    setNavigationSteps.call(this, '_askSubject', done);
+    this._setNavigationSteps('_askSubject', done);
 
     this.prompt([
       {
@@ -168,9 +185,9 @@ module.exports = $['yeoman-generator'].generators.Base.extend({
   },
 
   _askChapter: function (done) {
-    setNavigationSteps.call(this, '_askChapter', done);
+    this._setNavigationSteps('_askChapter', done);
 
-    this.log($.yosay('Ah yes, ' + this.subject.name + '. You know, ' + this.subject.description, { maxLength: 60 }));
+    log($.yosay('Ah yes, ' + this.subject.name + '. You know, ' + this.subject.description, { maxLength: 60 }));
 
     this.prompt([
       {
@@ -182,5 +199,17 @@ module.exports = $['yeoman-generator'].generators.Base.extend({
     ], function (props) {
       pick(this.subject.chapters, 'name', props.chapter).action(done);
     }.bind(this));
+  },
+
+  _setNavigationSteps: function (activeStep, done) {
+    var steps = ['_askSubject', '_askChapter'];
+
+    getBack = function () {
+      this[activeStep](done);
+    }.bind(this);
+
+    goBack = function () {
+      this[steps[steps.indexOf(activeStep) - 1]](done);
+    }.bind(this);
   }
 });

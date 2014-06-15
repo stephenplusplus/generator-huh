@@ -27,6 +27,7 @@
     "modmod": "^0.1.2",
     "opn": "^0.1.2",
     "propprop": "^0.3.0",
+    "sillystring": "^0.1.0",
     "yeoman-generator": "~0.16.0",
     "yosay": "^0.1.0"
   },

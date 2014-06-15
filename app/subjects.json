@@ -27,7 +27,7 @@
         "content": "Well, it's quite nice."
       }
     ],
-    "actions": ["yeomanGenerator"]
+    "hooks": ["yeomanGenerator"]
   },
   {
     "name": "Ember.js",
@@ -40,7 +40,7 @@
       }
     ],
     "chapters": [],
-    "actions": ["yeomanGenerator"]
+    "hooks": ["yeomanGenerator"]
   },
   {
     "name": "React",
@@ -58,7 +58,7 @@
         "content": "Passy."
       }
     ],
-    "actions": ["yeomanGenerator"]
+    "hooks": ["yeomanGenerator"]
   },
   {
     "name": "Polymer",
@@ -76,6 +76,6 @@
         "content": "Addy."
       }
     ],
-    "actions": ["yeomanGenerator"]
+    "hooks": ["yeomanGenerator"]
   }
 ]
