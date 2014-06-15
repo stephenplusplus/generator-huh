@@ -20,7 +20,8 @@ The idea with `huh`, is to give developers a command-line reference book and lea
 
 Since we're in the terminal, we can do cool stuff, like:
 
-- Use Yeoman to generate a React app.
+- Use Yeoman to generate a React app
+- Allow searching Stack Overflow for a given topic, e.g. "What is a directive?" displays chosen answer to top question
 - ??
 
 Please, if you have ideas for this generator, open an issue, or just send them on through. I would love to see contributions of any size.
