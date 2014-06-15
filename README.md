@@ -1,6 +1,6 @@
 # generator-huh [![Build Status](https://secure.travis-ci.org/stephenplusplus/generator-huh.png?branch=master)](https://travis-ci.org/stephenplusplus/generator-huh)
 
-> [Yeoman](http://yeoman.io) generator
+> [Yeoman](http://yeoman.io) generator to help you learn new things.
 
 
 ## Getting Started
