@@ -2,6 +2,8 @@
 
 > [Yeoman](http://yeoman.io) generator to help you learn new things.
 
+![](ss.png)
+
 # Installation & Usage
 ```sh
 $ npm install --global generator-huh
