@@ -1,6 +1,6 @@
 {
   "name": "generator-huh",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Yeoman generator to help you learn new things.",
   "license": "MIT",
   "main": "app/index.js",
